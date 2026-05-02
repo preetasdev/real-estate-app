@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+
+
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   return (
     <div className="w-64 bg-white p-5 shadow flex flex-col gap-6">
       
@@ -20,9 +25,9 @@ export default function Sidebar() {
       </div>
 
       <div>
-        <p className="text-xs text-gray-400 mb-2">SETTINGS</p>
-        <span className="block py-2 text-gray-300">Settings (Soon)</span>
+        <Link to="/settings" className="block py-2 hover:text-indigo-600">Settings</Link>
       </div>
+     
     </div>
   );
 }

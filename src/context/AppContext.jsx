@@ -46,6 +46,23 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem("clients");
     return saved ? JSON.parse(saved) : [];
   });
+  const [settings, setSettings] = useState(() => {
+  const saved = localStorage.getItem("settings");
+  return saved
+    ? JSON.parse(saved)
+    : {
+        theme: "light",
+        fontSize: "medium",
+        importCount: 0,
+        exportCount: 0,
+        lastLogin: new Date().toISOString(),
+        recycleBin: [],
+      };
+});
+useEffect(() => {
+  localStorage.setItem("settings", JSON.stringify(settings));
+}, [settings]);
+
 
   // 💾 SAVE
   useEffect(() => {
@@ -252,6 +269,9 @@ export function AppProvider({ children }) {
         addClient,
         assignProperty,
         updateClientStatus,
+
+        settings,
+        setSettings,
 
         getStats,
       }}

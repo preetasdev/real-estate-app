@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./layout/Layout";
-
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import Clients from "./pages/Clients";
@@ -9,7 +8,7 @@ import AddClient from "./pages/AddClient";
 import ClientDetail from "./pages/ClientDetail";
 import PropertyDetail from "./pages/PropertyDetail";
 import Login from "./pages/Login";
-
+import Settings from "./pages/Settings";
 import { useApp } from "./context/AppContext";
 
 function ProtectedRoute({ children }) {
@@ -44,6 +43,7 @@ export default function App() {
                   <Route path="/add-client" element={<AddClient />} />
                   <Route path="/clients/:id" element={<ClientDetail />} />
                   <Route path="/properties/:id" element={<PropertyDetail />} />
+                  <Route path="/settings" element={<Settings />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>
