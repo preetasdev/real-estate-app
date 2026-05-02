@@ -5,12 +5,12 @@ export const useApp = () => useContext(AppContext);
 
 export function AppProvider({ children }) {
 
-  // 👥 MOCK USERS
+  // 👥 USERS
   const users = [
     { id: 1, username: "admin", password: "123", role: "Admin" },
-    { id: 2, username: "agent1", password: "123", role: "Agent", teamId: 1 },
-    { id: 3, username: "agent2", password: "123", role: "Agent", teamId: 1 },
-    { id: 4, username: "lead1", password: "123", role: "TeamLead", teamId: 1 },
+    { id: 2, username: "agent1", password: "123", role: "Agent" },
+    { id: 3, username: "agent2", password: "123", role: "Agent" },
+    { id: 4, username: "lead1", password: "123", role: "TeamLead" },
   ];
 
   // 🔐 AUTH
@@ -23,7 +23,6 @@ export function AppProvider({ children }) {
     const found = users.find(
       (u) => u.username === username && u.password === password
     );
-
     if (!found) return false;
 
     setUser(found);
@@ -36,7 +35,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem("user");
   };
 
-  // 🏘️ DATA LOAD
+  // 🏘️ DATA
   const [properties, setProperties] = useState(() => {
     const saved = localStorage.getItem("properties");
     return saved ? JSON.parse(saved) : [];
@@ -46,23 +45,27 @@ export function AppProvider({ children }) {
     const saved = localStorage.getItem("clients");
     return saved ? JSON.parse(saved) : [];
   });
-  const [settings, setSettings] = useState(() => {
-  const saved = localStorage.getItem("settings");
-  return saved
-    ? JSON.parse(saved)
-    : {
-        theme: "light",
-        fontSize: "medium",
-        importCount: 0,
-        exportCount: 0,
-        lastLogin: new Date().toISOString(),
-        recycleBin: [],
-      };
-});
-useEffect(() => {
-  localStorage.setItem("settings", JSON.stringify(settings));
-}, [settings]);
 
+  // ⚙️ SETTINGS
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem("settings");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          theme: "light",
+          fontSize: "medium",
+          importCount: 0,
+          exportCount: 0,
+          lastLogin: new Date().toISOString(),
+          recycleBin: [],
+        };
+  });
+
+  // 👥 TEAMS
+  const [teams, setTeams] = useState(() => {
+    const saved = localStorage.getItem("teams");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // 💾 SAVE
   useEffect(() => {
@@ -73,30 +76,65 @@ useEffect(() => {
     localStorage.setItem("clients", JSON.stringify(clients));
   }, [clients]);
 
-  // 🛠️ CLEAN OLD DATA (VERY IMPORTANT FIX)
   useEffect(() => {
-    setProperties((prev) =>
-      prev.map((p, i) => ({
-        ...p,
-        id: p.id || Date.now() + Math.random() + i,
-        createdBy: p.createdBy || user?.id || 1,
-        teamId: p.teamId || user?.teamId || null,
-        images: p.images || [],
-      }))
-    );
+    localStorage.setItem("settings", JSON.stringify(settings));
+  }, [settings]);
 
-    setClients((prev) =>
-      prev.map((c, i) => ({
-        ...c,
-        id: c.id || Date.now() + Math.random() + i,
-        createdBy: c.createdBy || user?.id || 1,
-        teamId: c.teamId || user?.teamId || null,
-        properties: c.properties || [],
-      }))
-    );
-  }, []);
+  useEffect(() => {
+    localStorage.setItem("teams", JSON.stringify(teams));
+  }, [teams]);
 
-  // 📸 ADD IMAGES (FIXED ID MATCH)
+  // =========================
+  // 🔥 TEAM FUNCTIONS
+  // =========================
+
+  const createTeam = (name, leadId) => {
+    setTeams((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name,
+        leadId: Number(leadId),
+        members: [],
+      },
+    ]);
+  };
+
+  const addMemberToTeam = (teamId, userId) => {
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? { ...t, members: [...t.members, Number(userId)] }
+          : t
+      )
+    );
+  };
+
+  const removeMemberFromTeam = (teamId, userId) => {
+    setTeams((prev) =>
+      prev.map((t) =>
+        t.id === teamId
+          ? {
+              ...t,
+              members: t.members.filter((m) => m !== userId),
+            }
+          : t
+      )
+    );
+  };
+
+  // 🔍 GET TEAM OF USER
+  const getUserTeam = () => {
+    if (!user) return null;
+
+    return teams.find(
+      (t) =>
+        Number(t.leadId) === Number(user.id) ||
+        t.members.map(Number).includes(Number(user.id))
+    );
+  };
+
+  // 📸 ADD IMAGES
   const addPropertyImages = (id, files) => {
     const readers = Array.from(files).map(
       (file) =>
@@ -118,58 +156,56 @@ useEffect(() => {
     });
   };
 
-  // ➕ ADD PROPERTY (FIXED)
+  // ➕ ADD PROPERTY
   const addProperty = (property) => {
+    const team = getUserTeam();
+
     setProperties((prev) => [
       ...prev,
       {
         id: Date.now() + Math.random(),
         createdAt: new Date().toISOString(),
-
         ...property,
-
-        createdBy: user?.id,
-        teamId: user?.teamId || null,
-
+        createdBy: Number(user?.id),
+        teamId: team?.id || null,
         images: [],
       },
     ]);
   };
 
-  // ❌ DELETE PROPERTY (FINAL FIX)
+  // ❌ DELETE PROPERTY
   const deleteProperty = (id) => {
     setProperties((prev) =>
-      prev.filter((p) => String(p.id) !== String(id))
+      prev.filter((p) => Number(p.id) !== Number(id))
     );
   };
 
-  // ➕ ADD CLIENT (FIXED)
+  // ➕ ADD CLIENT
   const addClient = (client) => {
+    const team = getUserTeam();
+
     setClients((prev) => [
       ...prev,
       {
         id: Date.now() + Math.random(),
         createdAt: new Date().toISOString(),
-
         ...client,
-
-        createdBy: user?.id,
-        teamId: user?.teamId || null,
-
+        createdBy: Number(user?.id),
+        teamId: team?.id || null,
         status: "New",
         properties: [],
       },
     ]);
   };
 
-  // 🔗 ASSIGN PROPERTY (FIXED MATCH)
+  // 🔗 ASSIGN PROPERTY
   const assignProperty = (clientId, property) => {
     setClients((prev) =>
       prev.map((c) => {
-        if (String(c.id) !== String(clientId)) return c;
+        if (Number(c.id) !== Number(clientId)) return c;
 
         const exists = c.properties.some(
-          (p) => String(p.id) === String(property.id)
+          (p) => Number(p.id) === Number(property.id)
         );
 
         if (exists) return c;
@@ -186,7 +222,7 @@ useEffect(() => {
   const updateClientStatus = (id, status) => {
     setClients((prev) =>
       prev.map((c) =>
-        String(c.id) === String(id) ? { ...c, status } : c
+        Number(c.id) === Number(id) ? { ...c, status } : c
       )
     );
   };
@@ -197,14 +233,21 @@ useEffect(() => {
 
     if (user.role === "Admin") return properties;
 
-    if (user.role === "TeamLead") {
-      return properties.filter(
-        (p) => String(p.teamId) === String(user.teamId)
+    const team = getUserTeam();
+
+    if (user.role === "TeamLead" && team) {
+      const teamUserIds = [
+        Number(team.leadId),
+        ...team.members.map(Number),
+      ];
+
+      return properties.filter((p) =>
+        teamUserIds.includes(Number(p.createdBy))
       );
     }
 
     return properties.filter(
-      (p) => String(p.createdBy) === String(user.id)
+      (p) => Number(p.createdBy) === Number(user.id)
     );
   };
 
@@ -214,14 +257,21 @@ useEffect(() => {
 
     if (user.role === "Admin") return clients;
 
-    if (user.role === "TeamLead") {
-      return clients.filter(
-        (c) => String(c.teamId) === String(user.teamId)
+    const team = getUserTeam();
+
+    if (user.role === "TeamLead" && team) {
+      const teamUserIds = [
+        Number(team.leadId),
+        ...team.members.map(Number),
+      ];
+
+      return clients.filter((c) =>
+        teamUserIds.includes(Number(c.createdBy))
       );
     }
 
     return clients.filter(
-      (c) => String(c.createdBy) === String(user.id)
+      (c) => Number(c.createdBy) === Number(user.id)
     );
   };
 
@@ -269,6 +319,11 @@ useEffect(() => {
         addClient,
         assignProperty,
         updateClientStatus,
+
+        teams,
+        createTeam,
+        addMemberToTeam,
+        removeMemberFromTeam,
 
         settings,
         setSettings,

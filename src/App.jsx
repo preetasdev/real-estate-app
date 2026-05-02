@@ -9,6 +9,7 @@ import ClientDetail from "./pages/ClientDetail";
 import PropertyDetail from "./pages/PropertyDetail";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
+import Teams from "./pages/Teams";
 import { useApp } from "./context/AppContext";
 import { useEffect } from "react";
 
@@ -65,6 +66,7 @@ export default function App() {
                   <Route path="/clients/:id" element={<ClientDetail />} />
                   <Route path="/properties/:id" element={<PropertyDetail />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/teams" element={<Teams />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>

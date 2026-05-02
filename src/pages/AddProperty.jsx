@@ -34,13 +34,16 @@ export default function AddProperty() {
   const handleSubmit = () => {
     if (!form.title || !form.price) return;
 
-    // ❗ IMPORTANT FIX
+    // ✅ CREATE ID ONCE
     const id = Date.now();
 
-    // ✅ pass same id to property
-    addProperty({ ...form, id });
+    // ✅ ADD PROPERTY WITH SAME ID
+    addProperty({
+      ...form,
+      id, // IMPORTANT
+    });
 
-    // ✅ use SAME id for images
+    // ✅ ADD IMAGES WITH SAME ID
     if (files.length > 0) {
       addPropertyImages(id, files);
     }
@@ -49,7 +52,7 @@ export default function AddProperty() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow">
+    <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
       <h1 className="text-xl font-bold mb-6">Add Property</h1>
 
       <div className="grid grid-cols-2 gap-4">
@@ -195,12 +198,12 @@ export default function AddProperty() {
         <input
           type="file"
           multiple
-          onChange={(e) => setFiles(e.target.files)}
+          onChange={(e) => setFiles(Array.from(e.target.files))}
         />
 
         {/* PREVIEW */}
         <div className="grid grid-cols-3 gap-2 mt-3">
-          {Array.from(files).map((file, i) => (
+          {files.map((file, i) => (
             <img
               key={i}
               src={URL.createObjectURL(file)}

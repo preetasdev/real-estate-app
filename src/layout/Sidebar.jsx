@@ -26,6 +26,7 @@ export default function Sidebar() {
 
       <div>
         <Link to="/settings" className="block py-2 hover:text-indigo-600">Settings</Link>
+         <Link to="/teams" className="block py-2 hover:text-indigo-600">Teams</Link>
       </div>
      
     </div>
