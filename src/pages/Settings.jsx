@@ -9,12 +9,17 @@ export default function Settings() {
 
       <div className="bg-white p-4 rounded shadow">
         <h2>Theme</h2>
-        <button onClick={() => setSettings(prev => ({...prev, theme:"light"}))}>
-          Light
-        </button>
-        <button onClick={() => setSettings(prev => ({...prev, theme:"dark"}))}>
-          Dark
-        </button>
+       <button
+  onClick={() =>
+    setSettings((prev) => ({
+      ...prev,
+      theme: prev.theme === "dark" ? "light" : "dark",
+    }))
+  }
+  className="bg-indigo-600 text-white px-3 py-1 rounded"
+>
+  Toggle Theme ({settings.theme})
+</button>
       </div>
 
       <div className="bg-white p-4 rounded shadow">
@@ -25,9 +30,9 @@ export default function Settings() {
             setSettings(prev => ({...prev, fontSize:e.target.value}))
           }
         >
-          <option>small</option>
-          <option>medium</option>
-          <option>large</option>
+          <option>Small</option>
+          <option>Medium</option>
+          <option>Large</option>
         </select>
       </div>
 

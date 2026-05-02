@@ -10,8 +10,29 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import { useApp } from "./context/AppContext";
+import { useEffect } from "react";
 
 function ProtectedRoute({ children }) {
+  const { settings } = useApp();
+
+  useEffect(() => {
+  const root = document.documentElement;
+
+  if (settings?.fontSize === "Small") {
+    root.style.fontSize = "14px";
+  } else if (settings?.fontSize === "Large") {
+    root.style.fontSize = "18px";
+  } else {
+    root.style.fontSize = "16px";
+  }
+}, [settings?.fontSize]);
+
+useEffect(() => {
+  document.documentElement.classList.toggle(
+    "dark",
+    settings.theme === "dark"
+  );
+}, [settings.theme]);
   const { user } = useApp();
 
   if (!user) {

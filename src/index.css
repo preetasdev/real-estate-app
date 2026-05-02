@@ -6,6 +6,9 @@
 body {
   @apply bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900;
 }
+.dark body {
+  @apply bg-gray-900 text-white;
+}
 
 /* 🧊 Glass */
 .glass {
