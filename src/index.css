@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌈 Background */
+body {
+  @apply bg-gradient-to-br from-indigo-900 via-blue-900 to-purple-900;
+}
+
+/* 🧊 Glass */
+.glass {
+  @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg;
+}
+
+/* 🧾 TEXT COLORS (IMPORTANT FIX) */
+.text-primary {
+  @apply text-white;
+}
+
+.text-secondary {
+  @apply text-gray-200;
+}
+
+.text-dark {
+  @apply text-gray-800;
+}
+
+/* 🎯 Buttons */
+.btn-primary {
+  @apply bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 rounded-xl text-white font-medium transition-all duration-300;
+}
+.btn-primary:hover {
+  @apply scale-105 shadow-lg;
+}
+
+/* 🧾 Inputs */
+.input {
+  @apply bg-white/10 text-white border border-white/20 rounded-xl px-4 py-2 outline-none;
+}
+.input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
