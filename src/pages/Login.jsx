@@ -6,35 +6,53 @@ export default function Login() {
   const { login } = useApp();
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = () => {
-    if (!username || !password) return;
+    if (!name || !password) return;
 
-    const success = login(username, password);
+    const success = login(name, password);
 
-    if (!success) {
-      alert("Invalid username or password");
-      return;
+    if (success) {
+      navigate("/");
+    } else {
+      alert("Invalid credentials");
     }
-
-    navigate("/");
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded shadow w-80">
-        <h2 className="text-xl font-bold mb-4">Login</h2>
+    <div className="h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
 
-        {/* USERNAME */}
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow w-96">
+
+        {/* 🔥 LOGO + APP NAME */}
+        <div className="flex flex-col items-center mb-6">
+          
+          {/* LOGO */}
+          <img
+            src="src/public/logo.png" // 👉 put logo in public folder
+            alt="logo"
+            className="w-16 h-16 mb-3"
+          />
+
+          {/* APP NAME */}
+          <h1 className="text-2xl font-bold text-indigo-600">
+            ESTATE CRM
+          </h1>
+
+          <p className="text-sm text-gray-500 mt-1">
+            Manage properties & clients
+          </p>
+        </div>
+
+        {/* LOGIN FORM */}
         <input
           placeholder="Username"
           className="border p-2 w-full mb-3 rounded"
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
@@ -44,18 +62,11 @@ export default function Login() {
 
         <button
           onClick={handleLogin}
-          className="bg-indigo-600 text-white w-full py-2 rounded"
+          className="bg-indigo-600 text-white w-full py-2 rounded hover:bg-indigo-700 transition"
         >
           Login
         </button>
 
-        {/* DEMO USERS */}
-        <div className="mt-4 text-xs text-gray-500">
-          <p><b>Demo Users:</b></p>
-          <p>admin / 123 (Admin)</p>
-          <p>lead1 / 123 (Team Lead)</p>
-          <p>agent1 / 123 (Agent)</p>
-        </div>
       </div>
     </div>
   );
