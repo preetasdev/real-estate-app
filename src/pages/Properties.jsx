@@ -4,29 +4,100 @@ import { Link } from "react-router-dom";
 import ImportProperties from "../components/ImportProperties";
 
 export default function Properties() {
-  const { getFilteredProperties,deleteProperty } = useApp();
-const properties = getFilteredProperties();
+  const { getFilteredProperties, deleteProperty, user } = useApp();
+
+  const properties = getFilteredProperties();
+
   const [search, setSearch] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
+  const [sortKey, setSortKey] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
 
+  // 🔍 SEARCH
   const filtered = properties.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase())
+    (p.title || "").toLowerCase().includes(search.toLowerCase())
   );
 
+  // 🔃 SORT
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortKey) return 0;
+
+    const valA = (a[sortKey] || "").toString().toLowerCase();
+    const valB = (b[sortKey] || "").toString().toLowerCase();
+
+    return sortAsc
+      ? valA.localeCompare(valB)
+      : valB.localeCompare(valA);
+  });
+
+  // 🔗 SHARE
   const handleShare = (id) => {
     const url = `${window.location.origin}/properties/${id}`;
     navigator.clipboard.writeText(url);
     alert("Link copied!");
   };
-  const { user } = useApp();
-  
+
+  // 📤 EXPORT CSV
+  const exportCSV = () => {
+    const headers = [
+      "Title","Location","Price","Variant","Type",
+      "Facing","FloorNo","TotalFloor","Furnishing","Parking"
+    ];
+
+    const rows = sorted.map(p => [
+      p.title,
+      p.location,
+      p.price,
+      p.variant,
+      p.propertyType,
+      p.facing,
+      p.floorNo,
+      p.totalFloor,
+      p.furnishing,
+      p.parking
+    ]);
+
+    const csv =
+      [headers, ...rows]
+        .map(row => row.join(","))
+        .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "properties.csv";
+    a.click();
+  };
+
+  // 🔃 SORT HANDLER
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
 
   return (
     <div>
 
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-bold">Properties</h1>
-        <ImportProperties />
+
+        <div className="flex gap-2">
+          <ImportProperties />
+
+          {/* ✅ EXPORT BUTTON */}
+          <button
+            onClick={exportCSV}
+            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
 
       <input
@@ -40,23 +111,52 @@ const properties = getFilteredProperties();
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3">Sr No</th>
-              <th>Title</th>
-              <th>Location</th>
+
+              <th onClick={() => handleSort("title")} className="cursor-pointer">
+                Title
+              </th>
+
+              <th onClick={() => handleSort("location")} className="cursor-pointer">
+                Location
+              </th>
+
               <th>Photo</th>
-              <th>Price</th>
-              <th>Variant</th>
-              <th>Type</th>
-              <th>Facing</th>
-              <th>Floor</th>
-              <th>Furnishing</th>
-              <th>Parking</th>
+
+              <th onClick={() => handleSort("price")} className="cursor-pointer">
+                Price
+              </th>
+
+              <th onClick={() => handleSort("variant")} className="cursor-pointer">
+                Variant
+              </th>
+
+              <th onClick={() => handleSort("propertyType")} className="cursor-pointer">
+                Type
+              </th>
+
+              <th onClick={() => handleSort("facing")} className="cursor-pointer">
+                Facing
+              </th>
+
+              <th onClick={() => handleSort("floorNo")} className="cursor-pointer">
+                Floor
+              </th>
+
+              <th onClick={() => handleSort("furnishing")} className="cursor-pointer">
+                Furnishing
+              </th>
+
+              <th onClick={() => handleSort("parking")} className="cursor-pointer">
+                Parking
+              </th>
+
               <th>Share</th>
               <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.map((p, index) => (
+            {sorted.map((p, index) => (
               <tr key={p.id} className="border-t">
 
                 <td className="p-3">{index + 1}</td>
@@ -69,7 +169,7 @@ const properties = getFilteredProperties();
 
                 <td>{p.location}</td>
 
-                {/* ✅ ONLY PREVIEW (NO UPLOAD HERE) */}
+                {/* IMAGE PREVIEW */}
                 <td>
                   {p.images && p.images.length > 0 ? (
                     <img
@@ -119,7 +219,7 @@ const properties = getFilteredProperties();
         </table>
       </div>
 
-      {/* ✅ IMAGE PREVIEW MODAL */}
+      {/* IMAGE PREVIEW MODAL */}
       {previewImage && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"

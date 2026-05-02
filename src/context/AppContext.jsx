@@ -5,7 +5,7 @@ export const useApp = () => useContext(AppContext);
 
 export function AppProvider({ children }) {
 
-  // 👥 MOCK USERS (acts like DB)
+  // 👥 MOCK USERS
   const users = [
     { id: 1, username: "admin", password: "123", role: "Admin" },
     { id: 2, username: "agent1", password: "123", role: "Agent", teamId: 1 },
@@ -13,7 +13,7 @@ export function AppProvider({ children }) {
     { id: 4, username: "lead1", password: "123", role: "TeamLead", teamId: 1 },
   ];
 
-  // 🔐 AUTH STATE
+  // 🔐 AUTH
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
@@ -36,7 +36,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem("user");
   };
 
-  // 🏘️ LOAD DATA
+  // 🏘️ DATA LOAD
   const [properties, setProperties] = useState(() => {
     const saved = localStorage.getItem("properties");
     return saved ? JSON.parse(saved) : [];
@@ -56,7 +56,30 @@ export function AppProvider({ children }) {
     localStorage.setItem("clients", JSON.stringify(clients));
   }, [clients]);
 
-  // 📸 ADD IMAGES
+  // 🛠️ CLEAN OLD DATA (VERY IMPORTANT FIX)
+  useEffect(() => {
+    setProperties((prev) =>
+      prev.map((p, i) => ({
+        ...p,
+        id: p.id || Date.now() + Math.random() + i,
+        createdBy: p.createdBy || user?.id || 1,
+        teamId: p.teamId || user?.teamId || null,
+        images: p.images || [],
+      }))
+    );
+
+    setClients((prev) =>
+      prev.map((c, i) => ({
+        ...c,
+        id: c.id || Date.now() + Math.random() + i,
+        createdBy: c.createdBy || user?.id || 1,
+        teamId: c.teamId || user?.teamId || null,
+        properties: c.properties || [],
+      }))
+    );
+  }, []);
+
+  // 📸 ADD IMAGES (FIXED ID MATCH)
   const addPropertyImages = (id, files) => {
     const readers = Array.from(files).map(
       (file) =>
@@ -70,7 +93,7 @@ export function AppProvider({ children }) {
     Promise.all(readers).then((images) => {
       setProperties((prev) =>
         prev.map((p) =>
-          p.id === id
+          String(p.id) === String(id)
             ? { ...p, images: [...(p.images || []), ...images] }
             : p
         )
@@ -78,36 +101,43 @@ export function AppProvider({ children }) {
     });
   };
 
-  // ➕ ADD PROPERTY (WITH OWNER + TEAM)
+  // ➕ ADD PROPERTY (FIXED)
   const addProperty = (property) => {
     setProperties((prev) => [
       ...prev,
       {
-        ...property,
+        id: Date.now() + Math.random(),
         createdAt: new Date().toISOString(),
-        createdBy: user.id,
-        teamId: user.teamId || null,
+
+        ...property,
+
+        createdBy: user?.id,
+        teamId: user?.teamId || null,
+
         images: [],
       },
     ]);
   };
 
-  // ❌ DELETE PROPERTY
+  // ❌ DELETE PROPERTY (FINAL FIX)
   const deleteProperty = (id) => {
-    setProperties((prev) => prev.filter((p) => p.id !== id));
+    setProperties((prev) =>
+      prev.filter((p) => String(p.id) !== String(id))
+    );
   };
 
-  // ➕ ADD CLIENT
+  // ➕ ADD CLIENT (FIXED)
   const addClient = (client) => {
     setClients((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         createdAt: new Date().toISOString(),
 
         ...client,
-        createdBy: user.id,
-        teamId: user.teamId || null,
+
+        createdBy: user?.id,
+        teamId: user?.teamId || null,
 
         status: "New",
         properties: [],
@@ -115,13 +145,16 @@ export function AppProvider({ children }) {
     ]);
   };
 
-  // 🔗 ASSIGN PROPERTY
+  // 🔗 ASSIGN PROPERTY (FIXED MATCH)
   const assignProperty = (clientId, property) => {
     setClients((prev) =>
       prev.map((c) => {
-        if (c.id !== clientId) return c;
+        if (String(c.id) !== String(clientId)) return c;
 
-        const exists = c.properties.some((p) => p.id === property.id);
+        const exists = c.properties.some(
+          (p) => String(p.id) === String(property.id)
+        );
+
         if (exists) return c;
 
         return {
@@ -136,37 +169,46 @@ export function AppProvider({ children }) {
   const updateClientStatus = (id, status) => {
     setClients((prev) =>
       prev.map((c) =>
-        c.id === id ? { ...c, status } : c
+        String(c.id) === String(id) ? { ...c, status } : c
       )
     );
   };
 
-  // 🔐 ROLE-BASED FILTERING
+  // 🔐 FILTER PROPERTIES
   const getFilteredProperties = () => {
     if (!user) return [];
 
     if (user.role === "Admin") return properties;
 
     if (user.role === "TeamLead") {
-      return properties.filter((p) => p.teamId === user.teamId);
+      return properties.filter(
+        (p) => String(p.teamId) === String(user.teamId)
+      );
     }
 
-    return properties.filter((p) => p.createdBy === user.id);
+    return properties.filter(
+      (p) => String(p.createdBy) === String(user.id)
+    );
   };
 
+  // 🔐 FILTER CLIENTS
   const getFilteredClients = () => {
     if (!user) return [];
 
     if (user.role === "Admin") return clients;
 
     if (user.role === "TeamLead") {
-      return clients.filter((c) => c.teamId === user.teamId);
+      return clients.filter(
+        (c) => String(c.teamId) === String(user.teamId)
+      );
     }
 
-    return clients.filter((c) => c.createdBy === user.id);
+    return clients.filter(
+      (c) => String(c.createdBy) === String(user.id)
+    );
   };
 
-  // 📊 STATS (ROLE BASED)
+  // 📊 STATS
   const getStats = () => {
     const filteredClients = getFilteredClients();
     const filteredProperties = getFilteredProperties();

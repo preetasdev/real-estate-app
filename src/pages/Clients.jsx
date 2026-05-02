@@ -13,16 +13,19 @@ export default function Clients() {
     updateClientStatus,
   } = useApp();
 
-  // ✅ ROLE-BASED DATA
   const clients = getFilteredClients();
   const properties = getFilteredProperties();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  // 🔍 FILTER LOGIC
+  // ✅ NEW: SORT STATE
+  const [sortKey, setSortKey] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
+
+  // 🔍 FILTER
   const filtered = clients.filter((c) => {
-    const matchName = c.name
+    const matchName = (c.name || "")
       .toLowerCase()
       .includes(search.toLowerCase());
 
@@ -32,13 +35,82 @@ export default function Clients() {
     return matchName && matchStatus;
   });
 
+  // 🔃 SORT
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortKey) return 0;
+
+    const valA = (a[sortKey] || "").toString().toLowerCase();
+    const valB = (b[sortKey] || "").toString().toLowerCase();
+
+    return sortAsc
+      ? valA.localeCompare(valB)
+      : valB.localeCompare(valA);
+  });
+
+  // 🔃 SORT HANDLER
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
+
+  // 📤 EXPORT CSV
+  const exportClientsCSV = () => {
+    const headers = [
+      "Name",
+      "Phone",
+      "Budget",
+      "Location",
+      "Profile",
+      "Status",
+      "MoveInTimeline",
+    ];
+
+    const rows = sorted.map((c) => [
+      c.name,
+      c.phone,
+      c.budget,
+      c.locationPreference,
+      c.profileType,
+      c.status,
+      c.moveInTimeline,
+    ]);
+
+    const csv =
+      [headers, ...rows]
+        .map((row) => row.join(","))
+        .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "clients.csv";
+    a.click();
+  };
+
   return (
     <div>
 
       {/* HEADER */}
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-bold">Clients</h1>
-        <ImportClients />
+
+        <div className="flex gap-2">
+          <ImportClients />
+
+          {/* ✅ EXPORT BUTTON */}
+          <button
+            onClick={exportClientsCSV}
+            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* SEARCH + FILTER */}
@@ -65,26 +137,58 @@ export default function Clients() {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3">Sr No</th>
-              <th>Name</th>
+
+              <th
+                onClick={() => handleSort("name")}
+                className="cursor-pointer"
+              >
+                Name
+              </th>
+
               <th>Phone</th>
-              <th>Budget</th>
-              <th>Location</th>
-              <th>Profile</th>
-              <th>Status</th>
+
+              <th
+                onClick={() => handleSort("budget")}
+                className="cursor-pointer"
+              >
+                Budget
+              </th>
+
+              <th
+                onClick={() => handleSort("locationPreference")}
+                className="cursor-pointer"
+              >
+                Location
+              </th>
+
+              <th
+                onClick={() => handleSort("profileType")}
+                className="cursor-pointer"
+              >
+                Profile
+              </th>
+
+              <th
+                onClick={() => handleSort("status")}
+                className="cursor-pointer"
+              >
+                Status
+              </th>
+
               <th>Assign</th>
               <th>Properties</th>
             </tr>
           </thead>
 
           <tbody>
-            {filtered.length === 0 ? (
+            {sorted.length === 0 ? (
               <tr>
                 <td colSpan="9" className="text-center p-6 text-gray-500">
                   No clients found
                 </td>
               </tr>
             ) : (
-              filtered.map((c, index) => (
+              sorted.map((c, index) => (
                 <tr key={c.id} className="border-t hover:bg-gray-50">
 
                   <td className="p-3">{index + 1}</td>
@@ -120,7 +224,8 @@ export default function Clients() {
                     <select
                       onChange={(e) => {
                         const property = properties.find(
-                          (p) => p.id == e.target.value
+                          (p) =>
+                            String(p.id) === String(e.target.value) // ✅ FIXED
                         );
                         if (property) {
                           assignProperty(c.id, property);
