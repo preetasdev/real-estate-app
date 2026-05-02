@@ -7,10 +7,10 @@ export default function Teams() {
     createTeam,
     addMemberToTeam,
     removeMemberFromTeam,
+    deleteTeam,
     user,
   } = useApp();
 
-  // 🔥 STATIC USERS (same as AppContext)
   const users = [
     { id: 1, username: "admin", role: "Admin" },
     { id: 2, username: "agent1", role: "Agent" },
@@ -18,14 +18,12 @@ export default function Teams() {
     { id: 4, username: "lead1", role: "TeamLead" },
   ];
 
-  // FILTERS
   const leads = users.filter((u) => u.role === "TeamLead");
   const agents = users.filter((u) => u.role === "Agent");
 
   const [name, setName] = useState("");
   const [leadId, setLeadId] = useState("");
 
-  // ACCESS CONTROL
   if (user?.role !== "Admin" && user?.role !== "TeamLead") {
     return <div className="p-6">Access Denied</div>;
   }
@@ -46,7 +44,6 @@ export default function Teams() {
             onChange={(e) => setName(e.target.value)}
           />
 
-          {/* LEAD DROPDOWN */}
           <select
             className="border p-2 rounded w-full"
             onChange={(e) => setLeadId(e.target.value)}
@@ -69,80 +66,77 @@ export default function Teams() {
       )}
 
       {/* TEAM LIST */}
-      {teams.length === 0 ? (
-        <div className="text-gray-500">No teams created</div>
-      ) : (
-        teams.map((t) => {
-          const lead = users.find((u) => String(u.id) === String(t.leadId));
+      {teams.map((t) => {
+        const lead = users.find((u) => u.id === t.leadId);
 
-          return (
-            <div
-              key={t.id}
-              className="bg-white dark:bg-gray-800 p-4 rounded shadow space-y-3"
-            >
+        return (
+          <div
+            key={t.id}
+            className="bg-white dark:bg-gray-800 p-4 rounded shadow space-y-3"
+          >
+            <div className="flex justify-between items-center">
               <h2 className="font-semibold text-lg">{t.name}</h2>
 
-              <p>
-                <b>Lead:</b> {lead?.username || "Not Assigned"}
-              </p>
-
-              {/* MEMBERS */}
-              <div>
-                <b>Members:</b>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {t.members?.length ? (
-                    t.members.map((m) => {
-                      const member = users.find(
-                        (u) => String(u.id) === String(m)
-                      );
-
-                      return (
-                        <span
-                          key={m}
-                          className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs flex items-center gap-2"
-                        >
-                          {member?.username}
-
-                          {/* REMOVE */}
-                          <button
-                            onClick={() =>
-                              removeMemberFromTeam(t.id, m)
-                            }
-                            className="text-red-500"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    })
-                  ) : (
-                    <span className="text-gray-400 ml-2">None</span>
-                  )}
-                </div>
-              </div>
-
-              {/* ADD MEMBER */}
-              <div className="flex gap-2">
-                <select
-                  className="border p-2 rounded w-full"
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    addMemberToTeam(t.id, e.target.value);
-                  }}
+              {/* ❌ DELETE BUTTON */}
+              {user?.role === "Admin" && (
+                <button
+                  onClick={() => deleteTeam(t.id)}
+                  className="text-red-500 text-sm"
                 >
-                  <option value="">Add Member</option>
-                  {agents.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.username}
-                    </option>
-                  ))}
-                </select>
+                  Delete
+                </button>
+              )}
+            </div>
+
+            <p><b>Lead:</b> {lead?.username || "-"}</p>
+
+            {/* MEMBERS */}
+            <div>
+              <b>Members:</b>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {t.members?.length ? (
+                  t.members.map((m) => {
+                    const member = users.find((u) => u.id === m);
+                    return (
+                      <span
+                        key={m}
+                        className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs flex items-center gap-2"
+                      >
+                        {member?.username}
+                        <button
+                          onClick={() =>
+                            removeMemberFromTeam(t.id, m)
+                          }
+                          className="text-red-500"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })
+                ) : (
+                  <span className="text-gray-400">None</span>
+                )}
               </div>
             </div>
-          );
-        })
-      )}
 
+            {/* ADD MEMBER */}
+            <select
+              className="border p-2 rounded w-full"
+              onChange={(e) =>
+                addMemberToTeam(t.id, e.target.value)
+              }
+            >
+              <option value="">Add Member</option>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.username}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+      })}
     </div>
   );
 }

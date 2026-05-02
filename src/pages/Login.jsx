@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import logo from "../public/logo.png";
 
 export default function Login() {
   const { login } = useApp();
@@ -30,19 +31,15 @@ export default function Login() {
         <div className="flex flex-col items-center mb-6">
           
           {/* LOGO */}
-          <img
-            src="src/public/logo.png" // 👉 put logo in public folder
-            alt="logo"
-            className="w-16 h-16 mb-3"
-          />
+          <img src={logo} alt="logo" />
 
           {/* APP NAME */}
           <h1 className="text-2xl font-bold text-indigo-600">
-            ESTATE CRM
+            ESTATE PRO
           </h1>
 
           <p className="text-sm text-gray-500 mt-1">
-            Manage properties & clients
+            Smart Property Management Starts Here.
           </p>
         </div>
 

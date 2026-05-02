@@ -9,11 +9,13 @@ export default function Topbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="bg-white px-6 py-3 flex justify-between items-center shadow">
+    <div className="bg-white dark:bg-gray-800 px-6 py-3 flex justify-between items-center shadow">
 
-      {/* SEARCH */}
+     
+
+      {/* 🔍 SEARCH */}
       <input
-        className="border rounded-xl px-4 py-2 w-1/3 text-gray-800"
+        className="border rounded-xl px-4 py-2 w-1/3 text-gray-800 dark:bg-gray-700 dark:text-white"
         placeholder="Search..."
       />
 
@@ -24,19 +26,20 @@ export default function Topbar() {
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded"
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
             + Add
           </button>
 
           {open && (
-            <div className="absolute right-0 mt-2 bg-white shadow rounded w-40">
+            <div className="absolute right-0 mt-2 bg-white dark:bg-gray-700 shadow rounded w-40 z-50">
+
               <button
                 onClick={() => {
                   navigate("/add-property");
                   setOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
               >
                 Add Property
               </button>
@@ -46,17 +49,18 @@ export default function Topbar() {
                   navigate("/add-client");
                   setOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
               >
                 Add Client
               </button>
+
             </div>
           )}
         </div>
 
-        {/* USER INFO */}
+        {/* 👤 USER INFO */}
         <div className="flex items-center gap-2">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             {user?.username} ({user?.role})
           </div>
 
@@ -65,10 +69,10 @@ export default function Topbar() {
           </div>
         </div>
 
-        {/* LOGOUT */}
+        {/* 🚪 LOGOUT */}
         <button
           onClick={logout}
-          className="text-red-500 text-sm"
+          className="text-red-500 text-sm hover:underline"
         >
           Logout
         </button>

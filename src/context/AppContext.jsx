@@ -274,6 +274,12 @@ export function AppProvider({ children }) {
       (c) => Number(c.createdBy) === Number(user.id)
     );
   };
+  // ❌ DELETE TEAM (ADMIN)
+const deleteTeam = (teamId) => {
+  setTeams((prev) =>
+    prev.filter((t) => Number(t.id) !== Number(teamId))
+  );
+};
 
   // 📊 STATS
   const getStats = () => {
@@ -324,6 +330,7 @@ export function AppProvider({ children }) {
         createTeam,
         addMemberToTeam,
         removeMemberFromTeam,
+        deleteTeam,
 
         settings,
         setSettings,
